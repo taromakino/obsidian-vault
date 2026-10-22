@@ -1,5 +1,6 @@
 **Authors:** Alvin Zhang, Xuecheng Liu, Zixuan Wang, Fahim Tajwar, Daman Arora, Ruslan Salakhutdinov, Daniel Khashabi, Yuda Song, Andrea Zanette  
 **Year:** 2026
+
 ## Problem setup
 
 The paper trains a **proposer** model to edit the *harness* (the code controlling an AI agent's workflow) used by a **frozen solver** language model. The harness can determine how the solver is prompted, uses tools, checks its work, and produces an answer. The solver's weights do not change.
