@@ -1,181 +1,85 @@
-**Authors:** Stefan Thurner, J. Doyne Farmer, and John Geanakoplos  
-**Year:** 2012
 
-## Research question
+**Authors:** Stefan Thurner, J. Doyne Farmer, John Geanakoplos  
+**Published:** 2012
 
-Can leverage limits turn small, random changes in asset demand into large price declines and heavy-tailed returns?
+# Noise traders dollar demand
 
-The paper studies a market with noise traders and value-investing funds. The notes focus on the leverage mechanism illustrated in Figure 3: funds can stabilize prices when they buy undervalued assets, but borrowing can force them to sell during price declines, amplifying losses.
+The dollar amount noise traders want to invest follows:
+$$
+\log \xi_{nt}(t)=\rho\log\xi_{nt}(t-1)+\sigma\chi(t)+(1-\rho)\log(VN)
+$$
+Here $\xi_{nt}(t)$ is the dollar amount noise traders want to invest in the asset in period $t$. Its logarithm depends on last period's dollar demand, $\xi_{nt}(t-1)$, with persistence controlled by $\rho$. A random shock $\chi(t)$, drawn from a standard normal distribution (mean 0, standard deviation 1), changes demand; $\sigma$ controls the size of that shock. The final term pulls log demand toward $\log(VN)$, where $V$ is the perceived fundamental value per asset unit and $N$ is the fixed number of units available. When $\rho<1$, this gives demand a tendency to return toward $VN$.
 
-## 1. Market setup
+The paper uses $\rho=0.99$, $\sigma=0.035$, $V=1$, and $N=1000$.
 
-The market has one risky asset and cash. There are $N$ shares of the asset, its constant fundamental value is $V$ per share, and its market price at time $t$ is $p(t)$. Cash pays no interest.
+The demand measured in asset units is:
+$$
+D_{nt}(t,p(t))=\frac{\xi_{nt}(t)}{p(t)}
+$$
+Here $p(t)$ is the price per unit at time $t$ and $D_{nt}$ is the number of units demanded, not the dollar amount.
 
-Two types of traders participate:
+# Funds
 
-- **Noise traders** hold a randomly changing dollar amount of the asset.
-- **Funds** buy when the asset is below fundamental value. They may borrow to enlarge their holdings, but cannot short the asset.
+The model also has funds, indexed by $h$, that buy the asset when it is underpriced. Their dollar demand is $D_h(t)p(t)$, where $D_h(t)$ is the number of asset units fund $h$ wants to hold. This is analogous to the noise traders' dollar demand $\xi_{nt}(t)$.
 
-For fund $h$, $D_h(t)$ denotes shares held, $C_h(t)$ cash (negative when the fund borrows), and $W_h(t)$ wealth. The fund also has a performance score and an active or inactive status.
+Funds respond to the mispricing $m(t)=V-p(t)$, the difference between fundamental value and market price. When $m(t)>0$, their dollar demand increases linearly with mispricing, according to $D_h(t)p(t)=\beta_h m(t)W_h(t)$, where $\beta_h$ measures how aggressively fund $h$ responds. They hold no asset when it is overpriced ($m(t)<0$), and their demand stops increasing once they reach their leverage limit.
 
-## 2. Noise-trader demand
+Fund $h$ has wealth $W_h(t)$, equal to the value of its asset holdings plus its cash position $C_h(t)$:
+$$
+W_h(t)=D_h(t)p(t)+C_h(t)
+$$
+Cash can be negative when the fund borrows to buy the asset. Every fund starts with wealth $W_h(0)=2$.
 
-At each time $t$, draw a new standard normal shock $\chi(t)$. Noise traders' dollar demand follows
+The fund's demand for asset units is given by three cases (when its wealth is nonnegative):
 $$
-\log\xi_{\mathrm{nt}}(t)=\rho\log\xi_{\mathrm{nt}}(t-1)+\sigma\chi(t)+(1-\rho)\log(VN).
-$$
-The parameter $\sigma$ controls the size of random changes, while $\rho$ controls their persistence. Dollar demand tends to return toward $VN$, the cost of all $N$ shares at fundamental value.
-
-Given a trial market price $p$, noise traders demand
-$$
-D_{\mathrm{nt}}(t;p)=\frac{\xi_{\mathrm{nt}}(t)}{p}
-$$
-shares. The shock changes their dollar demand; the trial price converts it to shares.
-
-## 3. Fund wealth, performance, and investor flows
-
-The market price at time $t$ is not known in advance. The model tests a candidate price $p$ and evaluates all fund quantities at that price. The notation $W_h(t;p)$ means the wealth fund $h$ would have if the current price were $p$.
-
-First, the fund's previous shares are revalued at the trial price. Its wealth before investor deposits or withdrawals is
-$$
-A_h(t;p)=D_h(t-1)p+C_h(t-1).
-$$
-The return on the fund's previous position is
-$$
-r_h(t;p)=\frac{D_h(t-1)[p-p(t-1)]}{W_h(t-1)}.
-$$
-This return is larger in magnitude for a fund holding more shares relative to its wealth.
-
-The fund's performance score is an exponential moving average of returns:
-$$
-r_h^{\mathrm{perf}}(t;p)=(1-a)r_h^{\mathrm{perf}}(t-1)+a r_h(t;p).
-$$
-The parameter $a$ sets the weight on the newest return.
-
-Investors add money to funds whose performance exceeds a benchmark $r^{\mathrm b}$ and withdraw money from funds that underperform it. The desired flow is
-$$
-\widetilde F_h(t;p)=b[r_h^{\mathrm{perf}}(t;p)-r^{\mathrm b}]A_h(t;p).
-$$
-The parameter $b$ controls how strongly flows respond to performance. Actual withdrawals cannot exceed the fund's available wealth:
-$$
-F_h(t;p)=\max\{\widetilde F_h(t;p),-A_h(t;p)\}.
-$$
-The fund's candidate wealth after this flow is
-$$
-W_h(t;p)=A_h(t;p)+F_h(t;p).
-$$
-## 4. Fund demand and leverage limits
-
-Mispricing at the trial price is
-$$
-m(t;p)=V-p.
-$$
-Fund $h$ targets the following leverage:
-$$
-\lambda_h(t;p)=\begin{cases}
-0, & m(t;p)\leq0,\\
-\min\{\beta_hm(t;p),\lambda_{\mathrm{MAX}}\}, & m(t;p)>0.
+D_h(t,p(t))=\begin{cases}
+0, & m(t)\leq 0,\\[4pt]
+\dfrac{\beta_h m(t)W_h(t)}{p(t)}, & 0<m(t)<m_h^{\mathrm{crit}},\\[8pt]
+\dfrac{\lambda_{\mathrm{MAX}}W_h(t)}{p(t)}, & m(t)\geq m_h^{\mathrm{crit}}.
 \end{cases}
 $$
-When the asset is at or above fundamental value, the fund does not hold it. When it is underpriced, desired leverage rises with the size of the discount, at a rate controlled by $\beta_h$, but cannot exceed $\lambda_{\mathrm{MAX}}$.
+Here $\lambda_{\mathrm{MAX}}$ is the maximum leverage. Before this limit is reached, fund $h$ has leverage $\lambda_h(t)=D_h(t)p(t)/W_h(t)=\beta_h m(t)$. The critical mispricing $m_h^{\mathrm{crit}}$ is defined as the value of mispricing at which leverage reaches its maximum. Thus $\beta_h m_h^{\mathrm{crit}}=\lambda_{\mathrm{MAX}}$, so $m_h^{\mathrm{crit}}=\lambda_{\mathrm{MAX}}/\beta_h$.
 
-An active, solvent fund demands
+The fund's leverage is the dollar value of its asset holdings divided by its wealth (equation 4):
 $$
-D_h(t;p)=\frac{\lambda_h(t;p)W_h(t;p)}{p}.
+\lambda_h(t)=\frac{D_h(t)p(t)}{W_h(t)}=\frac{D_h(t)p(t)}{D_h(t)p(t)+C_h(t)}.
 $$
-The numerator is the target dollar position; dividing by $p$ converts it to shares. Closed funds and funds below the survival threshold have zero demand.
+The firm is required by the bank it borrows from to maintain $\lambda_h(t)\leq\lambda_{\mathrm{MAX}}$. If leverage would exceed this limit, the fund must reduce the dollar value of its holdings, $D_h(t)p(t)$, by selling some of the asset. This is a margin call.
 
-Leverage is the value of shares held divided by fund wealth. A limit of $\lambda_{\mathrm{MAX}}=1$ permits an unleveraged position, while $\lambda_{\mathrm{MAX}}=10$ permits assets worth up to ten times fund wealth.
+If $W_h(t)<0$, the fund defaults and goes out of business. It sells its assets to repay as much of its debt as possible, and the bank bears the remaining loss. For simplicity, the model assumes the bank continues lending to other funds as before, despite the loss. After some time, the defaulting fund reemerges as a new fund.
 
-## 5. Market clearing
-
-For a trial price $p$, the total excess demand for shares is
+The market price is set by equating the combined demand of noise traders and funds to the fixed supply $N$ of the asset:
 $$
-Z_t(p)=D_{\mathrm{nt}}(t;p)+\sum_h D_h(t;p)-N.
+D_{nt}(t,p(t))+\sum_h D_h(t,p(t))=N.
 $$
-The numerical solver changes $p$ until it finds a price satisfying
+# Fund wealth dynamics
+
+If a fund's wealth falls below $W_h(0)/10$, it goes out of business. After $T_{\mathrm{reintro}}=100$ time steps, it is replaced by a new fund with initial wealth $W_h(0)$ and the same parameters $\beta_h$ and $\lambda_{\mathrm{MAX}}$.
+
+A single representative investor deposits money into or withdraws money from each fund based on its recent performance. Fund $h$'s return from price changes at time $t$ is
 $$
-Z_t(p)=0.
+r_h(t)=\frac{D_h(t-1)[p(t)-p(t-1)]}{W_h(t-1)}.
 $$
-That solution is the market price $p(t)$. Noise traders and all funds together then demand exactly the fixed supply $N$.
-
-All quantities evaluated at $p(t)$ become the period's realized returns, performance scores, investor flows, wealth, and positions. Each fund's cash balance is
+Recent performance is measured by an exponential moving average (EMA) of returns (equation 5):
 $$
-C_h(t)=W_h(t)-p(t)D_h(t).
+r_h^{\mathrm{perf}}(t)=(1-a)r_h^{\mathrm{perf}}(t-1)+a r_h(t).
 $$
-A positive balance is cash; a negative balance represents borrowing of $-C_h(t)$.
-
-## 6. A single iteration of the model
-
-At the start of time $t$, the model knows $p(t-1)$, noise traders' previous dollar demand, and each fund's previous shares, cash, wealth, performance, and active status. The parameters are fixed. Only the new noise-trader shock is random.
-
-**Step 1. Update noise-trader dollar demand.** Draw $\chi(t)$ and calculate $\xi_{\mathrm{nt}}(t)$ from the equation in Section 2.
-
-**Step 2. Try a candidate price.** For each trial price $p$, use the previously held positions and cash to calculate marked wealth $A_h(t;p)$, fund return $r_h(t;p)$, and updated performance $r_h^{\mathrm{perf}}(t;p)$.
-
-**Step 3. Calculate flows and fund wealth.** Determine $\widetilde F_h(t;p)$, cap withdrawals to obtain $F_h(t;p)$, and calculate $W_h(t;p)$.
-
-**Step 4. Calculate demand.** Given the same trial price, compute each fund's mispricing, target leverage, and share demand $D_h(t;p)$. Also calculate noise-trader share demand $D_{\mathrm{nt}}(t;p)$.
-
-**Step 5. Solve for the price.** Evaluate $Z_t(p)$ and repeat Steps 2–4 with another trial price until $Z_t(p)=0$. All prices and fund demands must be consistent simultaneously; the intermediate trial values are not separate trading periods.
-
-**Step 6. Finalize the state.** At the solved price $p(t)$, record the new fund holdings, wealth, returns, performance, flows, and cash balances. Apply the fund closure and re-entry rules. These values become the inputs for time $t+1$.
-
-If a fund's wealth becomes negative, it defaults because it cannot repay its debt. A fund is also closed when wealth falls below $W_h(0)/10$. It remains inactive for $T_{\mathrm{reintro}}$ periods, then returns with its original strategy and initial wealth $W_h(0)$.
-
-## 7. Initialization and parameters
-
-The baseline values in the supplied summary are:
-
-| Quantity | Value | Meaning |
-|---|---:|---|
-| $V$ | $1$ | Fundamental value per share |
-| $N$ | $1000$ | Fixed supply of shares |
-| $\rho$ | $0.99$ | Persistence of noise-trader dollar demand |
-| $\sigma$ | $0.035$ | Size of demand shocks |
-| $W_h(0)$ | $2$ | Initial wealth per fund |
-| $\beta_h$ | $5,10,\ldots,50$ | Fund-specific response to mispricing |
-| $a$ | $0.1$ | Weight on latest fund return |
-| $b$ | $0.15$ | Investor flow sensitivity |
-| $r^{\mathrm b}$ | $0.005$ | Performance benchmark |
-| $T_{\mathrm{reintro}}$ | $100$ | Periods before a closed fund returns |
-
-The initial state used in the summary is
+The investor's desired capital flow into fund $h$ is (equation 6):
 $$
-\begin{aligned}
-\xi_{\mathrm{nt}}(0)&=VN, & p(0)&=V,\\
-W_h(0)&=2, & D_h(0)&=0,\\
-C_h(0)&=W_h(0), & r_h^{\mathrm{perf}}(0)&=0.
-\end{aligned}
+\widetilde F_h(t)=b\left[r_h^{\mathrm{perf}}(t)-r_b\right]\left[D_h(t-1)p(t)+C_h(t-1)\right].
 $$
-Thus, noise-trader demand initially supports the fundamental price, and each fund starts with cash but no shares, debt, or performance history. The paper does not specify every initial condition; early periods are excluded from measurements to reduce dependence on those choices.
+This depends on recent performance relative to the benchmark return $r_b$, the fund's size before investor flows, and the investor's sensitivity to performance, $b$. Positive flows are deposits; negative flows are withdrawals.
 
-## 8. Leverage experiment
-
-The main comparison holds the other parameters fixed and varies $\lambda_{\mathrm{MAX}}$. Figure 3 compares:
-
-| Market | Leverage limit | Interpretation |
-|---|---:|---|
-| Noise traders only | Not applicable | No stabilizing fund demand |
-| Funds without borrowing | $\lambda_{\mathrm{MAX}}=1$ | Funds can hold assets up to their wealth |
-| Leveraged funds | $\lambda_{\mathrm{MAX}}=10$ | Funds can hold assets worth ten times their wealth |
-
-Intermediate leverage limits are also examined.
-
-Without borrowing, funds tend to stabilize prices: when noise-trader demand falls and the asset becomes cheaper, funds want to buy more of it. Their demand offsets part of the initial price decline.
-
-With borrowing, funds can initially buy larger positions. This also increases their exposure to price changes. If a fund has leverage $\lambda$, a price fall of fraction $x$ reduces its wealth by approximately fraction $\lambda x$, before accounting for other flows or rebalancing.
-
-As prices fall, the value of shares declines while the debt does not. Leverage therefore rises. To respect the cap, the fund may have to reduce its position to at most
+The actual flow is limited by (equation 7):
 $$
-\lambda_{\mathrm{MAX}}W_h(t)
+F_h(t)=\max\left(\widetilde F_h(t),-\left[D_h(t-1)p(t)+C_h(t-1)\right]\right).
 $$
-dollars of risky assets. If this is less than its existing position, it must sell shares and use the proceeds to reduce debt.
+This ensures the investor cannot withdraw more than the fund's current value before investor flows.
 
-That sale adds selling pressure during an existing decline. The lower equilibrium price can cause more wealth losses and more forced sales, especially when several funds hit their limits together. A modest noise-trader shock can therefore produce a large negative return.
+Fund wealth then changes through gains or losses on its existing asset holdings and through investor deposits or withdrawals (equation 8):
+$$
+W_h(t)=W_h(t-1)+[p(t)-p(t-1)]D_h(t-1)+F_h(t).
+$$
+In the simulations, the paper uses $a=0.1$ for the EMA, $b=0.15$ for investor sensitivity to performance, and benchmark return $r^b=0.005$.
 
-## 9. Main interpretation
-
-**Leverage creates an asymmetric feedback mechanism.** Value investors can dampen ordinary price fluctuations by buying undervalued assets. But once they are highly leveraged, falling prices shrink their wealth and can force them to sell the same asset. This reinforces declines and produces a heavier negative tail in the return distribution.
-
-The crucial feature is simultaneous market clearing: forced fund sales and noise-trader demand determine one equilibrium price, rather than unfolding as an exogenous sequence of trades.
+The benchmark return $r^b$ determines how large funds become relative to noise traders. When it is very low, funds attract substantial wealth and buy aggressively even at small mispricings, creating an effective floor under prices. When it is very high, funds remain small and have little effect on prices. The model's most interesting behavior occurs at intermediate benchmark returns, when fund demand and noise-trader demand are comparable.
